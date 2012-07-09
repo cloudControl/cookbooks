@@ -1,0 +1,6 @@
+maintainer "Tobias Wilken"
+maintainer_email "tw@cloudcontrol.de"
+license "Apache 2.0"
+description "Installs and configures Logentries"
+version "0.0.2"
+depends "apt"
