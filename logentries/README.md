@@ -1,4 +1,4 @@
-Chef recipe to install and configure logentries.
+Chef recipe to install and configure logentries
 ===========
 
 Recipes
