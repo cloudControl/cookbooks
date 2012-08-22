@@ -1,4 +1,4 @@
-module Le
+class Logentries < Chef::Recipe
   # Register the host with the given hostname via userkey with logentries
   def register(userkey, hostname)
     execute "le register --user-key #{userkey}  --name='#{hostname}'" do

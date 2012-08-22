@@ -16,10 +16,6 @@
 # limitations under the License.
 #
 
-class Chef::Recipe
-  include Le
-end
-
 # Add the logentries repository
 apt_repository "logentries" do
     uri "http://rep.logentries.com/"
@@ -36,18 +32,21 @@ package "logentries"
 # Get the logentries credentials from an enrypted data bag
 le_databag = Chef::EncryptedDataBagItem.load("logentries", node[:env])
 
+le = Logentries.new(cookbook_name, recipe_name, run_context)
+
 # Register the host with logentries
-register(le_databag['userkey'], node[:hostname])
+le.register(le_databag['userkey'], node[:hostname])
 
 # Install the logentries-daemon package
 package "logentries-daemon"
 
 # Follow the given logs
 node[:logentries][:logs].each do |log|
-  follow(log)
+  le.follow(log)
 end
 
 # Restart the logentries agent
-execute "service logentries restart" do
-  not_if "test -e /etc/le/config"
+service "logentries" do
+	action :restart
+	not_if "test -e /etc/le/config"
 end
