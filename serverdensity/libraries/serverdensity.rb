@@ -17,9 +17,9 @@ class ServerDensity
         raise
       end
       parsed_output = JSON.parse response.to_str
-      node.set[:serverdensity][:agent_key] = parsed_output[:data][:agentKey]
-      node.set[:serverdensity][:deviceId] = parsed_output[:data][:deviceId]
-      node.set[:serverdensity][:deviceIdOld] = parsed_output[:data][:deviceIdOld]
+      node.set[:serverdensity][:agent_key] = parsed_output["data"]["agentKey"]
+      node.set[:serverdensity][:deviceId] = parsed_output["data"]["deviceId"]
+      node.set[:serverdensity][:deviceIdOld] = parsed_output["data"]["deviceIdOld"]
     end
   end
 
