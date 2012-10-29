@@ -20,7 +20,7 @@
 apt_repository "serverdensity" do
     uri "http://www.serverdensity.com/downloads/linux/deb"
     distribution "all"
-    components ["main"]
+    components [ "main" ]
     key "https://www.serverdensity.com/downloads/boxedice-public.key"
     action :add
 end
@@ -29,7 +29,7 @@ end
 package "sd-agent"
 
 # Get the serverdensity credentials from an enrypted data bag
-sd_databag = Chef::EncryptedDataBagItem.load("serverdensity", node[:env])
+sd_databag = Chef::EncryptedDataBagItem.load "serverdensity", node[:env]
 
 # Register the host with serverdensity
 sd = ServerDensity.new
@@ -43,16 +43,16 @@ template "/etc/sd-agent/config.cfg" do
     group "sd-agent"
     mode 0500
     variables({
-    	:sd_url => sd_databag['sd_url'],
-	    :agent_key => node[:serverdensity][:agent_key],
-	    :mongodb_server => node[:serverdensity][:mongodb_server],
-	    :mongodb_dbstats => node[:serverdensity][:mongodb_dbstats],
-	    :mongodb_replset => node[:serverdensity][:mongodb_replset]
-	})
+      :sd_url => sd_databag['sd_url'],
+      :agent_key => node[:serverdensity][:agent_key],
+      :mongodb_server => node[:serverdensity][:mongodb_server],
+      :mongodb_dbstats => node[:serverdensity][:mongodb_dbstats],
+      :mongodb_replset => node[:serverdensity][:mongodb_replset]
+    })
     notifies :restart, "service[sd-agent]"
 end
 
 # Starts the agent
 service "sd-agent" do
-	action :nothing
+  action :nothing
 end

@@ -20,7 +20,7 @@
 apt_repository "logentries" do
     uri "http://rep.logentries.com/"
     distribution node['lsb']['codename']
-    components ["main"]
+    components [ "main" ]
     keyserver "keys.gnupg.net"
     key "C43C79AD"
     action :add
@@ -30,20 +30,18 @@ end
 package "logentries"
 
 # Get the logentries credentials from an enrypted data bag
-le_databag = Chef::EncryptedDataBagItem.load("logentries", node[:env])
+le_databag = Chef::EncryptedDataBagItem.load "logentries", node[:env]
 
 le = Logentries.new(cookbook_name, recipe_name, run_context)
 
 # Register the host with logentries
-le.register(le_databag['userkey'], node[:hostname])
+le.register le_databag['userkey'], node[:hostname]
 
 # Install the logentries-daemon package
 package "logentries-daemon"
 
 # Follow the given logs
-node[:logentries][:logs].each do |log|
-  le.follow(log)
-end
+node[:logentries][:logs].each { |log| le.follow log }
 
 # Restart the logentries agent
 service "logentries" do
