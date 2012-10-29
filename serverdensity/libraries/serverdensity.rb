@@ -27,7 +27,7 @@ class ServerDensity
   def addAlerts(username, password, sd_url, api_key, node)
     addAlert(node, username, password, sd_url, api_key, :checkType => "noData", :comparison => "=", :triggerThresholdMin => "5")
     addAlert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 2 * node[:cpu][:total].to_f)
-    addAlert(node, username, password, sd_url, api_key, :checkType => "memPhysUsed", :comparison => ">", :triggerThreshold => 0.85 * node[:memory][:total].to_f / 1000) # In MB
+    addAlert(node, username, password, sd_url, api_key, :checkType => "memPhysUsed", :comparison => ">", :triggerThreshold => 0.95 * node[:memory][:total].to_f / 1000) # In MB
     addAlert(node, username, password, sd_url, api_key, :checkType => "memSwapUsed", :comparison => ">", :triggerThreshold => 0.25 * node[:memory][:swap][:total].to_f / 1000) # In MB
     addAlert(node, username, password, sd_url, api_key, :checkType => "diskUsagePercent", :comparison => ">=", :triggerThreshold => "75%", :diskUsageMountPoint => "/")
   end
