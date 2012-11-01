@@ -25,11 +25,11 @@ class ServerDensity
 
   # Add alerts to the given host
   def addAlerts(username, password, sd_url, api_key, node)
-    addAlert(node, username, password, sd_url, api_key, :checkType => "noData", :comparison => "=", :triggerThresholdMin => "5")
-    addAlert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 2 * node[:cpu][:total].to_f)
-    addAlert(node, username, password, sd_url, api_key, :checkType => "memPhysUsed", :comparison => ">", :triggerThreshold => 0.95 * node[:memory][:total].to_f / 1000) # In MB
-    addAlert(node, username, password, sd_url, api_key, :checkType => "memSwapUsed", :comparison => ">", :triggerThreshold => 0.25 * node[:memory][:swap][:total].to_f / 1000) # In MB
-    addAlert(node, username, password, sd_url, api_key, :checkType => "diskUsagePercent", :comparison => ">=", :triggerThreshold => "75%", :diskUsageMountPoint => "/")
+    addAlert(node, username, password, sd_url, api_key, :checkType => "noData", :comparison => "=", :triggerThresholdMin => "5", :notificationFixed => true, :notificationDelayImmediately => true, :notificationFrequencyOnce => true)
+    addAlert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 2 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
+    addAlert(node, username, password, sd_url, api_key, :checkType => "memCached", :comparison => "<", :triggerThreshold => 0.15 * node[:memory][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
+    addAlert(node, username, password, sd_url, api_key, :checkType => "memSwapUsed", :comparison => ">", :triggerThreshold => 0.25 * node[:memory][:swap][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
+    addAlert(node, username, password, sd_url, api_key, :checkType => "diskUsagePercent", :comparison => ">=", :triggerThreshold => "75%", :diskUsageMountPoint => "/", :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
   end
 
   # Add alerts to the given host
@@ -43,9 +43,6 @@ class ServerDensity
       options[:userId] ||= [ "group" ]
       options[:serverId] ||= node[:serverdensity][:deviceIdOld]
       options[:notificationType] ||= [ "email", "iphonepush", "androidpush" ]
-      options[:notificationFixed] = true if options[:notificationFixed].nil?
-      options[:notificationDelayImmediately] = true if options[:notificationDelayImmediately].nil?
-      options[:notificationFrequencyOnce] = true if options[:notificationFrequencyOnce].nil?
 
       begin
         RestClient.post url, options
