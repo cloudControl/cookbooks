@@ -41,7 +41,7 @@ le.register le_databag['userkey'], node[:hostname]
 package "logentries-daemon"
 
 # Follow the given logs
-node[:logentries][:logs].each { |log| le.follow log }
+node[:logentries][:logs].each { |key, log| le.follow log }
 
 # Restart the logentries agent
 service "logentries" do
