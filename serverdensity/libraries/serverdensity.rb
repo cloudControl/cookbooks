@@ -1,7 +1,7 @@
 require 'rest_client'
 require 'json'
 
-class ServerDensity
+class ServerDensity < Chef::Recipe
   # Register the host with serverdensity
   def register(username, password, sd_url, api_key, node)
     # Check if the node is already registered
@@ -52,6 +52,38 @@ class ServerDensity
         raise
       end
       node.set[:serverdensity][ options[:checkType] ] = true
+    end
+  end
+
+  # Add varnish plugin
+  def addVarnish()
+    execute "serverdensity varnish plugin" do
+        command "/usr/bin/sd-agent/plugins.py -u 50acc6d49cfe1e6e0a000001"
+        user "root"
+    end
+  end
+
+  # Add varnishstat plugin
+  def addVarnishstat()
+    execute "serverdensity varnish plugin" do
+      command "/usr/bin/sd-agent/plugins.py -u 50acc71d9cfe1e1c63000000"
+      user "root"
+    end
+  end
+
+  # Add supervisord plugin
+  def addSupervisord()
+    execute "serverdensity varnish plugin" do
+      command "/usr/bin/sd-agent/plugins.py -u 50accbdd9cfe1e5576000002"
+      user "root"
+    end
+  end
+
+  # Add supervisordmemory plugin
+  def addSupervisordMemory()
+    execute "serverdensity varnish plugin" do
+      command "/usr/bin/sd-agent/plugins.py -u 50accc3a9cfe1e651e000001"
+      user "root"
     end
   end
 end

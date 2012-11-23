@@ -32,9 +32,20 @@ package "sd-agent"
 sd_databag = Chef::EncryptedDataBagItem.load "serverdensity", node[:env]
 
 # Register the host with serverdensity
-sd = ServerDensity.new
+sd = ServerDensity.new(cookbook_name, recipe_name, run_context)
 sd.register(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
 sd.addAlerts(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
+
+if node[:recipes].include? 'varnish'
+  Chef::Log.info "Add varnish plugin"
+  sd.addVarnish()
+  sd.addVarnishstat()
+end
+
+if node[:recipes].include? 'nginx'
+  Chef::Log.info "Configure nginx plugin"
+  node.set[:serverdensity][:nginx_status_url] = 'http://localhost:82/nginx_status'
+end
 
 # Creates the config file
 template "/etc/sd-agent/config.cfg" do
@@ -47,7 +58,8 @@ template "/etc/sd-agent/config.cfg" do
       :agent_key => node[:serverdensity][:agent_key],
       :mongodb_server => node[:serverdensity][:mongodb_server],
       :mongodb_dbstats => node[:serverdensity][:mongodb_dbstats],
-      :mongodb_replset => node[:serverdensity][:mongodb_replset]
+      :mongodb_replset => node[:serverdensity][:mongodb_replset],
+      :nginx_status_url => node[:serverdensity][:nginx_status_url]
     })
     notifies :restart, "service[sd-agent]"
 end

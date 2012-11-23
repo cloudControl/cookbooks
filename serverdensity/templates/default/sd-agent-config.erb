@@ -13,7 +13,7 @@ agent_key: <%= @agent_key %>
 # Leave blank to ignore. See http://support.serverdensity.com/knowledgebase/articles/76018-writing-a-plugin-linux-mac-and-freebsd
 #
 
-plugin_directory:
+plugin_directory: /etc/sd-agent/plugins
 
 #
 # Optional status monitoring
@@ -46,7 +46,7 @@ mysql_pass:
 # nginx
 # See http://support.serverdensity.com/knowledgebase/articles/75885-nginx-monitoring-linux-mac-and-freebsd
 
-nginx_status_url: http://www.example.com/nginx_status
+nginx_status_url: <%= @nginx_status_url %>
 
 # RabbitMQ
 # See http://support.serverdensity.com/knowledgebase/articles/75888-rabbitmq-monitoring-linux-mac-and-freebsd
