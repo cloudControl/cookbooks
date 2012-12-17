@@ -73,19 +73,21 @@ class ServerDensity < Chef::Recipe
     end
   end
 
-  # Add supervisord plugin
-  def addSupervisord()
-    execute "serverdensity varnish plugin" do
-      command "/usr/bin/sd-agent/plugins.py -u 50accbdd9cfe1e5576000002"
+  def addSupervisordCheck(username, password, sd_url, api_key, node)
+    execute "serverdensity supervisordcheck plugin" do
+      command "/usr/bin/sd-agent/plugins.py -u 50cb621c9cfe1e563300000b"
       user "root"
     end
-  end
 
-  # Add supervisordmemory plugin
-  def addSupervisordMemory()
-    execute "serverdensity varnish plugin" do
-      command "/usr/bin/sd-agent/plugins.py -u 50accc3a9cfe1e651e000001"
-      user "root"
-    end
+    addAlert(node, username, password, sd_url, api_key,
+      :checkType => "SupervisordCheck",
+      :comparison => "<",
+      :triggerThreshold => "1",
+      :pluginKey => "Running",
+      :notificationFixed => true,
+      :notificationDelay => 5,
+      :notificationFrequencyOnce => true,
+      :notificationType => [ "email", "iphonepush", "androidpush", 'sms' ]
+    )
   end
 end

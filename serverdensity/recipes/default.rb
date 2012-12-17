@@ -47,6 +47,9 @@ if node[:recipes].include? 'nginx'
   node.set[:serverdensity][:nginx_status_url] = 'http://localhost:82/nginx_status'
 end
 
+Chef::Log.info "Add SupervisordCheck plugin"
+sd.addSupervisordCheck(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
+
 # Creates the config file
 template "/etc/sd-agent/config.cfg" do
     source "sd-agent-config.erb"
