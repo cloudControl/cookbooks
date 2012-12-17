@@ -25,21 +25,19 @@ apt_repository "serverdensity" do
     action :add
 end
 
-# Install the sd-agent package
 package "sd-agent"
 
-# Get the serverdensity credentials from an enrypted data bag
 sd_databag = Chef::EncryptedDataBagItem.load "serverdensity", node[:env]
 
 # Register the host with serverdensity
 sd = ServerDensity.new(cookbook_name, recipe_name, run_context)
 sd.register(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
-sd.addAlerts(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
+sd.add_alerts(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
 
 if node[:recipes].include? 'varnish'
   Chef::Log.info "Add varnish plugin"
-  sd.addVarnish()
-  sd.addVarnishstat()
+  sd.add_varnish()
+  sd.add_varnishstat()
 end
 
 if node[:recipes].include? 'nginx'
@@ -48,7 +46,7 @@ if node[:recipes].include? 'nginx'
 end
 
 Chef::Log.info "Add SupervisordCheck plugin"
-sd.addSupervisordCheck(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
+sd.add_supervisord_check(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
 
 # Creates the config file
 template "/etc/sd-agent/config.cfg" do

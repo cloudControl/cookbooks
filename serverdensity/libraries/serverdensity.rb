@@ -2,7 +2,6 @@ require 'rest_client'
 require 'json'
 
 class ServerDensity < Chef::Recipe
-  # Register the host with serverdensity
   def register(username, password, sd_url, api_key, node)
     # Check if the node is already registered
     unless node[:serverdensity].has_key? "agent_key"
@@ -23,19 +22,17 @@ class ServerDensity < Chef::Recipe
     end
   end
 
-  # Add alerts to the given host
-  def addAlerts(username, password, sd_url, api_key, node)
-    addAlert(node, username, password, sd_url, api_key, :checkType => "noData", :comparison => "=", :triggerThresholdMin => "5", :notificationFixed => true, :notificationDelayImmediately => true, :notificationFrequencyOnce => true)
-    addAlert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 10 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
-    addAlert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 5 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 15, :notificationFrequencyOnce => true)
-    addAlert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 2 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 60, :notificationFrequencyOnce => true)
-    addAlert(node, username, password, sd_url, api_key, :checkType => "memCached", :comparison => "<", :triggerThreshold => 0.15 * node[:memory][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
-    addAlert(node, username, password, sd_url, api_key, :checkType => "memSwapUsed", :comparison => ">", :triggerThreshold => 0.25 * node[:memory][:swap][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
-    addAlert(node, username, password, sd_url, api_key, :checkType => "diskUsagePercent", :comparison => ">=", :triggerThreshold => "75%", :diskUsageMountPoint => "/", :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
+  def add_alerts(username, password, sd_url, api_key, node)
+    add_alert(node, username, password, sd_url, api_key, :checkType => "noData", :comparison => "=", :triggerThresholdMin => "5", :notificationFixed => true, :notificationDelayImmediately => true, :notificationFrequencyOnce => true)
+    add_alert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 10 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
+    add_alert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 5 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 15, :notificationFrequencyOnce => true)
+    add_alert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 2 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 60, :notificationFrequencyOnce => true)
+    add_alert(node, username, password, sd_url, api_key, :checkType => "memCached", :comparison => "<", :triggerThreshold => 0.15 * node[:memory][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
+    add_alert(node, username, password, sd_url, api_key, :checkType => "memSwapUsed", :comparison => ">", :triggerThreshold => 0.25 * node[:memory][:swap][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
+    add_alert(node, username, password, sd_url, api_key, :checkType => "diskUsagePercent", :comparison => ">=", :triggerThreshold => "75%", :diskUsageMountPoint => "/", :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
   end
 
-  # Add alerts to the given host
-  def addAlert(node, username, password, sd_url, api_key, options={})
+  def add_alert(node, username, password, sd_url, api_key, options={})
     # Check if the node has already the alert added
     if node['serverdensity'].has_key? 'deviceIdOld' and not node['serverdensity'].has_key? "#{options[:checkType]}-#{options.fetch(:triggerThreshold, "0")}"
       Chef::Log.info "Add alert: #{options[:checkType]}-#{options.fetch(:triggerThreshold, "0")}"
@@ -57,29 +54,27 @@ class ServerDensity < Chef::Recipe
     end
   end
 
-  # Add varnish plugin
-  def addVarnish()
+  def add_varnish()
     execute "serverdensity varnish plugin" do
-        command "/usr/bin/sd-agent/plugins.py -u 50acc6d49cfe1e6e0a000001"
-        user "root"
+      command "/usr/bin/sd-agent/plugins.py -u 50acc6d49cfe1e6e0a000001"
+      user "root"
     end
   end
 
-  # Add varnishstat plugin
-  def addVarnishstat()
+  def add_varnishstat()
     execute "serverdensity varnish plugin" do
       command "/usr/bin/sd-agent/plugins.py -u 50acc71d9cfe1e1c63000000"
       user "root"
     end
   end
 
-  def addSupervisordCheck(username, password, sd_url, api_key, node)
+  def add_supervisord_check(username, password, sd_url, api_key, node)
     execute "serverdensity supervisordcheck plugin" do
       command "/usr/bin/sd-agent/plugins.py -u 50cb621c9cfe1e563300000b"
       user "root"
     end
 
-    addAlert(node, username, password, sd_url, api_key,
+    add_alert(node, username, password, sd_url, api_key,
       :checkType => "SupervisordCheck",
       :comparison => "<",
       :triggerThreshold => "1",
