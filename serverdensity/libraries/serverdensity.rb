@@ -27,8 +27,8 @@ class ServerDensity < Chef::Recipe
     add_alert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 10 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
     add_alert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 5 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 15, :notificationFrequencyOnce => true)
     add_alert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 2 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 60, :notificationFrequencyOnce => true)
-    add_alert(node, username, password, sd_url, api_key, :checkType => "memCached", :comparison => "<", :triggerThreshold => 0.15 * node[:memory][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
-    add_alert(node, username, password, sd_url, api_key, :checkType => "memSwapUsed", :comparison => ">", :triggerThreshold => 0.25 * node[:memory][:swap][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true) unless node[:memory][:swap][:total].to_f == 0
+    add_alert(node, username, password, sd_url, api_key, :checkType => "memCached", :comparison => "<", :triggerThreshold => 0.15 * node[:memory][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true) if mem_cached_ready(node)
+    add_alert(node, username, password, sd_url, api_key, :checkType => "memSwapUsed", :comparison => ">", :triggerThreshold => 0.25 * node[:memory][:swap][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true) if mem_swap_used_ready(node)
     add_alert(node, username, password, sd_url, api_key, :checkType => "diskUsagePercent", :comparison => ">=", :triggerThreshold => "75%", :diskUsageMountPoint => "/", :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
   end
 
@@ -82,7 +82,16 @@ class ServerDensity < Chef::Recipe
       :notificationFixed => true,
       :notificationDelay => 5,
       :notificationFrequencyOnce => true,
-      :notificationType => [ "email", "iphonepush", "androidpush", 'sms' ]
+      :notificationType => [ "email", "iphonepush", "androidpush", "sms" ]
     )
   end
+
+  def mem_cached_ready(node)
+    node[:uptime_seconds].to_f > 7200 or node[:memory][:cached].to_f > 0.25 * node[:memory][:total].to_f
+  end
+
+  def mem_swap_used_ready(node)
+    node[:memory][:swap][:total].to_f > 0
+  end
+
 end
