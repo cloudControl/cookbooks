@@ -24,6 +24,7 @@ class ServerDensity < Chef::Recipe
 
   def add_alerts(username, password, sd_url, api_key, node)
     add_alert(node, username, password, sd_url, api_key, :checkType => "noData", :comparison => "=", :triggerThresholdMin => "5", :notificationFixed => true, :notificationDelayImmediately => true, :notificationFrequencyOnce => true, :notificationType => [ "email", "iphonepush", "androidpush", "sms" ])
+    add_alert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 20 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelayImmediately => true, :notificationFrequencyOnce => true, :notificationType => [ "email", "iphonepush", "androidpush", "sms" ])
     add_alert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 10 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
     add_alert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 5 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 15, :notificationFrequencyOnce => true)
     add_alert(node, username, password, sd_url, api_key, :checkType => "loadAvrg", :comparison => ">", :triggerThreshold => 2 * node[:cpu][:total].to_f, :notificationFixed => true, :notificationDelay => 60, :notificationFrequencyOnce => true)
