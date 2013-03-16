@@ -87,6 +87,13 @@ class ServerDensity < Chef::Recipe
     )
   end
 
+  def add_mysql_replication_check()
+    execute "serverdensity mysql replication plugin" do
+      command "/usr/bin/sd-agent/plugins.py -u 514462939cfe1e164b000009"
+      user "root"
+    end
+  end
+
   def mem_cached_ready(node)
     node[:uptime_seconds].to_f > 7200 or node[:memory][:cached].to_f > 0.25 * node[:memory][:total].to_f
   end

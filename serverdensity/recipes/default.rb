@@ -45,6 +45,11 @@ if node[:recipes].include? 'nginx'
   node.set[:serverdensity][:nginx_status_url] = 'http://localhost:82/nginx_status'
 end
 
+if node[:recipes].include? 'mysql::server'
+  Chef::Log.info "Configure mysql replication plugin"
+  sd.add_mysql_replication_check()
+end
+
 Chef::Log.info "Add SupervisordCheck plugin"
 sd.add_supervisord_check(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
 
