@@ -67,7 +67,10 @@ template "/etc/sd-agent/config.cfg" do
       :mongodb_server => node[:serverdensity][:mongodb_server],
       :mongodb_dbstats => node[:serverdensity][:mongodb_dbstats],
       :mongodb_replset => node[:serverdensity][:mongodb_replset],
-      :nginx_status_url => node[:serverdensity][:nginx_status_url]
+      :nginx_status_url => node[:serverdensity][:nginx_status_url],
+      :mysql_server => node[:serverdensity][:mysql_server],
+      :mysql_user => node[:serverdensity][:mysql_user],
+      :mysql_pass => node[:serverdensity][:mysql_pass]
     })
     notifies :restart, "service[sd-agent]"
 end
