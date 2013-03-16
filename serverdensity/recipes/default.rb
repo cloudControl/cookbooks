@@ -47,6 +47,7 @@ end
 
 if node[:recipes].include? 'mysql::server'
   Chef::Log.info "Configure mysql replication plugin"
+  package "python-mysqldb"
   sd.add_mysql_replication_check()
 end
 
