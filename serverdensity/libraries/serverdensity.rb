@@ -31,12 +31,19 @@ class ServerDensity < Chef::Recipe
     add_alert(node, username, password, sd_url, api_key, :checkType => "memCached", :comparison => "<", :triggerThreshold => 0.15 * node[:memory][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true) if mem_cached_ready(node)
     add_alert(node, username, password, sd_url, api_key, :checkType => "memSwapUsed", :comparison => ">", :triggerThreshold => 0.25 * node[:memory][:swap][:total].to_f / 1000, :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true) if mem_swap_used_ready(node)
     add_alert(node, username, password, sd_url, api_key, :checkType => "diskUsagePercent", :comparison => ">=", :triggerThreshold => "75%", :diskUsageMountPoint => "/", :notificationFixed => true, :notificationDelay => 5, :notificationFrequencyOnce => true)
+    add_alert(node, username, password, sd_url, api_key, :checkType => "mysqlSecondsBehindMaster", :comparison => ">=", :triggerThreshold => 1500, :notificationFixed => true, :notificationDelayImmediately => true, :notificationFrequencyOnce => true) if node[:recipes].include? 'mysql::server'
   end
 
   def add_alert(node, username, password, sd_url, api_key, options={})
     # Check if the node has already the alert added
-    if node['serverdensity'].has_key? 'deviceIdOld' and not node['serverdensity'].has_key? "#{options[:checkType]}-#{options.fetch(:triggerThreshold, "0")}"
-      Chef::Log.info "Add alert: #{options[:checkType]}-#{options.fetch(:triggerThreshold, "0")}"
+    key = if options[:pluginKey]
+      "#{options[:checkType]}-#{options[:pluginKey]}-#{options.fetch(:triggerThreshold, "0")}"
+    else
+      "#{options[:checkType]}-#{options.fetch(:triggerThreshold, "0")}"
+    end
+
+    if node['serverdensity'].has_key? 'deviceIdOld' and not node['serverdensity'].has_key? key
+      Chef::Log.info "Add alert: #{key}"
 
       # Check if the node has already alerts added
       url = "https://#{username}:#{password}@api.serverdensity.com/1.4/alerts/add?account=#{sd_url}&apiKey=#{api_key}"
@@ -51,7 +58,7 @@ class ServerDensity < Chef::Recipe
         puts error.response
         raise
       end
-      node.set[:serverdensity][ "#{options[:checkType]}-#{options.fetch(:triggerThreshold, "0")}" ] = true
+      node.set[:serverdensity][ key ] = true
     end
   end
 
@@ -87,11 +94,15 @@ class ServerDensity < Chef::Recipe
     )
   end
 
-  def add_mysql_replication_check()
+  def add_mysql_replication_check(username, password, sd_url, api_key, node)
     execute "serverdensity mysql replication plugin" do
       command "/usr/bin/sd-agent/plugins.py -u 514462939cfe1e164b000009"
       user "root"
     end
+    add_alert(node, username, password, sd_url, api_key, :checkType => "MySQLReplication", :pluginKey => "Seconds_Behind_Master", :comparison => "<", :triggerThreshold => 0, :notificationFixed => true, :notificationDelayImmediately => true, :notificationFrequencyOnce => true, :notificationType => [ "email", "iphonepush", "androidpush", "sms" ])
+    add_alert(node, username, password, sd_url, api_key, :checkType => "MySQLReplication", :pluginKey => "Slave_SQL_Running", :comparison => "<", :triggerThreshold => 1, :notificationFixed => true, :notificationDelayImmediately => true, :notificationFrequencyOnce => true, :notificationType => [ "email", "iphonepush", "androidpush", "sms" ])
+    add_alert(node, username, password, sd_url, api_key, :checkType => "MySQLReplication", :pluginKey => "Slave_IO_Running", :comparison => "<", :triggerThreshold => 1, :notificationFixed => true, :notificationDelayImmediately => true, :notificationFrequencyOnce => true, :notificationType => [ "email", "iphonepush", "androidpush", "sms" ])
+    add_alert(node, username, password, sd_url, api_key, :checkType => "MySQLReplication", :pluginKey => "Running", :comparison => "<", :triggerThreshold => 1, :notificationFixed => true, :notificationDelayImmediately => true, :notificationFrequencyOnce => true, :notificationType => [ "email", "iphonepush", "androidpush", "sms" ])
   end
 
   def mem_cached_ready(node)

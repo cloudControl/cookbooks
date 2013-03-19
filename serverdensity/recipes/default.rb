@@ -29,6 +29,26 @@ package "sd-agent"
 
 sd_databag = Chef::EncryptedDataBagItem.load "serverdensity", node[:env]
 
+# Creates the config file
+template "/etc/sd-agent/config.cfg" do
+    source "sd-agent-config.erb"
+    owner "sd-agent"
+    group "sd-agent"
+    mode 0500
+    variables({
+      :sd_url => sd_databag['sd_url'],
+      :agent_key => node[:serverdensity][:agent_key],
+      :mongodb_server => node[:serverdensity][:mongodb_server],
+      :mongodb_dbstats => node[:serverdensity][:mongodb_dbstats],
+      :mongodb_replset => node[:serverdensity][:mongodb_replset],
+      :nginx_status_url => node[:serverdensity][:nginx_status_url],
+      :mysql_server => node[:serverdensity][:mysql_server],
+      :mysql_user => node[:serverdensity][:mysql_user],
+      :mysql_pass => node[:serverdensity][:mysql_pass]
+    })
+    notifies :restart, "service[sd-agent]"
+end
+
 # Register the host with serverdensity
 sd = ServerDensity.new(cookbook_name, recipe_name, run_context)
 sd.register(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
@@ -48,32 +68,12 @@ end
 if node[:recipes].include? 'mysql::server'
   Chef::Log.info "Configure mysql replication plugin"
   package "python-mysqldb"
-  sd.add_mysql_replication_check()
+  sd.add_mysql_replication_check(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
 end
 
 if node[:recipes].include? 'supervisor'
   Chef::Log.info "Add SupervisordCheck plugin"
   sd.add_supervisord_check(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
-end
-
-# Creates the config file
-template "/etc/sd-agent/config.cfg" do
-    source "sd-agent-config.erb"
-    owner "sd-agent"
-    group "sd-agent"
-    mode 0500
-    variables({
-      :sd_url => sd_databag['sd_url'],
-      :agent_key => node[:serverdensity][:agent_key],
-      :mongodb_server => node[:serverdensity][:mongodb_server],
-      :mongodb_dbstats => node[:serverdensity][:mongodb_dbstats],
-      :mongodb_replset => node[:serverdensity][:mongodb_replset],
-      :nginx_status_url => node[:serverdensity][:nginx_status_url],
-      :mysql_server => node[:serverdensity][:mysql_server],
-      :mysql_user => node[:serverdensity][:mysql_user],
-      :mysql_pass => node[:serverdensity][:mysql_pass]
-    })
-    notifies :restart, "service[sd-agent]"
 end
 
 # Starts the agent
