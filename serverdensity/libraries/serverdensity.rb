@@ -6,7 +6,7 @@ class ServerDensity < Chef::Recipe
     # Check if the node is already registered
     unless node[:serverdensity].has_key? "agent_key"
       url = "https://#{username}:#{password}@api.serverdensity.com/1.4/devices/add?account=#{sd_url}&apiKey=#{api_key}"
-      data = { "name" => node[:hostname], "group" => node[:roles].first }
+      data = { "name" => node[:hostname], "group" => node[:serverdensity][:group].nil? ? node[:roles].first : node[:serverdensity][:group] }
       Chef::Log.info "Register: #{node[:hostname]}"
       begin
         response = RestClient.post url, data
