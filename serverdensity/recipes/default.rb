@@ -29,6 +29,15 @@ package "sd-agent"
 
 sd_databag = Chef::EncryptedDataBagItem.load "serverdensity", node[:env]
 
+directory "#{node[:serverdensity][:plugin_directory]}" do
+  recursive true
+end
+
+cookbook_file "#{node[:serverdensity][:plugin_directory]}/TCPSocketStates.py" do
+  source "TCPSocketStates.py"
+  mode 00644
+end
+
 # Creates the config file
 template "/etc/sd-agent/config.cfg" do
     source "sd-agent-config.erb"
@@ -44,7 +53,8 @@ template "/etc/sd-agent/config.cfg" do
       :nginx_status_url => node[:serverdensity][:nginx_status_url],
       :mysql_server => node[:serverdensity][:mysql_server],
       :mysql_user => node[:serverdensity][:mysql_user],
-      :mysql_pass => node[:serverdensity][:mysql_pass]
+      :mysql_pass => node[:serverdensity][:mysql_pass],
+      :plugin_directory => node[:serverdensity][:plugin_directory]
     })
     notifies :restart, "service[sd-agent]"
 end
@@ -60,7 +70,7 @@ if node[:recipes].include? 'varnish'
   sd.add_varnishstat()
 end
 
-if node[:recipes].include? 'nginx'
+if node[:recipes].include? 'nginx' or node[:recipes].include? 'nginxlua' 
   Chef::Log.info "Configure nginx plugin"
   node.set[:serverdensity][:nginx_status_url] = 'http://localhost:82/nginx_status'
 end
