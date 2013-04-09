@@ -29,6 +29,11 @@ package "sd-agent"
 
 sd_databag = Chef::EncryptedDataBagItem.load "serverdensity", node[:env]
 
+if node[:recipes].include? 'nginx' or node[:recipes].include? 'nginxlua' 
+  Chef::Log.info "Configure nginx plugin"
+  node.set[:serverdensity][:nginx_status_url] = 'http://localhost:82/nginx_status'
+end
+
 directory "#{node[:serverdensity][:plugin_directory]}" do
   recursive true
 end
@@ -68,11 +73,6 @@ if node[:recipes].include? 'varnish'
   Chef::Log.info "Add varnish plugin"
   sd.add_varnish()
   sd.add_varnishstat()
-end
-
-if node[:recipes].include? 'nginx' or node[:recipes].include? 'nginxlua' 
-  Chef::Log.info "Configure nginx plugin"
-  node.set[:serverdensity][:nginx_status_url] = 'http://localhost:82/nginx_status'
 end
 
 if node[:recipes].include? 'mysql::server'
