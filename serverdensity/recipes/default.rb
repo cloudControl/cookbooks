@@ -29,6 +29,11 @@ package "sd-agent"
 
 sd_databag = Chef::EncryptedDataBagItem.load "serverdensity", node[:env]
 
+# Register the host with serverdensity
+sd = ServerDensity.new(cookbook_name, recipe_name, run_context)
+sd.register(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
+sd.add_alerts(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
+
 if node[:recipes].include? 'nginx' or node[:recipes].include? 'nginxlua' 
   Chef::Log.info "Configure nginx plugin"
   node.set[:serverdensity][:nginx_status_url] = 'http://localhost:82/nginx_status'
@@ -63,11 +68,6 @@ template "/etc/sd-agent/config.cfg" do
     })
     notifies :restart, "service[sd-agent]"
 end
-
-# Register the host with serverdensity
-sd = ServerDensity.new(cookbook_name, recipe_name, run_context)
-sd.register(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
-sd.add_alerts(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
 
 if node[:recipes].include? 'varnish'
   Chef::Log.info "Add varnish plugin"
