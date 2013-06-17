@@ -1,4 +1,5 @@
 default[:serverdensity][:mongodb_server] = ''
 default[:serverdensity][:mongodb_dbstats] = 'no'
 default[:serverdensity][:mongodb_replset] = 'no'
-default[:serverdensity][:nginx_status_url] = 'http://127.0.0.1:82/nginx_status'
+default[:serverdensity][:nginx_status_url] = 'http://www.example.com/nginx_status'
+default[:serverdensity][:plugin_directory] = '/etc/sd-agent/plugins'

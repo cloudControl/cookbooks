@@ -29,6 +29,25 @@ package "sd-agent"
 
 sd_databag = Chef::EncryptedDataBagItem.load "serverdensity", node[:env]
 
+# Register the host with serverdensity
+sd = ServerDensity.new(cookbook_name, recipe_name, run_context)
+sd.register(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
+sd.add_alerts(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
+
+if node[:recipes].include? 'nginx' or node[:recipes].include? 'nginxlua' 
+  Chef::Log.info "Configure nginx plugin"
+  node.set[:serverdensity][:nginx_status_url] = 'http://localhost:82/nginx_status'
+end
+
+directory "#{node[:serverdensity][:plugin_directory]}" do
+  recursive true
+end
+
+cookbook_file "#{node[:serverdensity][:plugin_directory]}/TCPSocketStates.py" do
+  source "TCPSocketStates.py"
+  mode 00644
+end
+
 # Creates the config file
 template "/etc/sd-agent/config.cfg" do
     source "sd-agent-config.erb"
@@ -44,25 +63,16 @@ template "/etc/sd-agent/config.cfg" do
       :nginx_status_url => node[:serverdensity][:nginx_status_url],
       :mysql_server => node[:serverdensity][:mysql_server],
       :mysql_user => node[:serverdensity][:mysql_user],
-      :mysql_pass => node[:serverdensity][:mysql_pass]
+      :mysql_pass => node[:serverdensity][:mysql_pass],
+      :plugin_directory => node[:serverdensity][:plugin_directory]
     })
     notifies :restart, "service[sd-agent]"
 end
-
-# Register the host with serverdensity
-sd = ServerDensity.new(cookbook_name, recipe_name, run_context)
-sd.register(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
-sd.add_alerts(sd_databag['username'], sd_databag['password'], sd_databag['sd_url'], sd_databag['api_key'], node)
 
 if node[:recipes].include? 'varnish'
   Chef::Log.info "Add varnish plugin"
   sd.add_varnish()
   sd.add_varnishstat()
-end
-
-if node[:recipes].include? 'nginx'
-  Chef::Log.info "Configure nginx plugin"
-  node.set[:serverdensity][:nginx_status_url] = 'http://localhost:82/nginx_status'
 end
 
 if node[:recipes].include? 'mysql::server'

@@ -1,3 +1,3 @@
 [submodule "apt"]
 	path = apt
-	url = git://github.com/cookbooks/apt.git
+	url = git://github.com/opscode-cookbooks/apt.git
