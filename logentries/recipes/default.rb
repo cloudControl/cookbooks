@@ -16,7 +16,6 @@
 # limitations under the License.
 #
 
-# Add the logentries repository
 apt_repository "logentries" do
     uri "http://rep.logentries.com/"
     distribution node['lsb']['codename']
@@ -26,25 +25,24 @@ apt_repository "logentries" do
     action :add
 end
 
-# Install the logentries package
 package "logentries"
-
-# Get the logentries credentials from an enrypted data bag
-le_databag = Chef::EncryptedDataBagItem.load "logentries", node[:env]
 
 le = Logentries.new(cookbook_name, recipe_name, run_context)
 
-# Register the host with logentries
-le.register le_databag['userkey'], node[:hostname]
+ruby_block "Register the host with logentries" do
+  block do
+    le_databag = Chef::EncryptedDataBagItem.load "logentries", node[:env]
 
-# Install the logentries-daemon package
+    le.register le_databag['userkey'], node[:hostname]
+  end
+end
+
 package "logentries-daemon"
 
-# Follow the given logs
-node[:logentries][:logs].each { |key, log| le.follow log }
-
-# Restart the logentries agent
-service "logentries" do
-	action :restart
-	not_if "test -e /etc/le/config"
+ruby_block "Follow the logs" do
+  block do
+    node[:logentries][:logs].each { |key, log| le.follow log }
+  end
 end
+
+service "logentries"
