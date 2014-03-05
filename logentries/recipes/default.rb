@@ -20,7 +20,7 @@ apt_repository "logentries" do
     uri "http://rep.logentries.com/"
     distribution node['lsb']['codename']
     components [ "main" ]
-    keyserver "keys.gnupg.net"
+    keyserver "keyserver.ubuntu.com"
     key "C43C79AD"
     action :add
 end
