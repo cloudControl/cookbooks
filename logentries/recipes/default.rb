@@ -26,28 +26,43 @@ apt_repository "logentries" do
 end
 
 package "logentries"
+package "logentries-daemon"
+
+# Some logs go into a logset, some go into the host. The config template
+# is required for the ones that go into the logset
+
+directory "/etc/le" do
+  owner 'root'
+  group 'root'
+  mode '0775'
+end
+
+template "/etc/le/config" do
+  source "config.erb"
+  mode '0600'
+  owner 'root'
+  group 'root'
+  action :create_if_missing
+end
+
+service 'logentries' do
+  action :enable
+  subscribes :restart, "template[/etc/le/config]", :delayed
+end
 
 le = Logentries.new(cookbook_name, recipe_name, run_context)
 
 ruby_block "Register the host with logentries" do
   block do
     le_databag = Chef::EncryptedDataBagItem.load "logentries", node[:env]
-
     le.register le_databag['userkey'], node[:hostname]
   end
 end
 
-package "logentries-daemon"
+# Use the regular follow command for the logs that are more useful per host
 
 ruby_block "Follow the logs" do
   block do
     node[:logentries][:logs].each { |key, log| le.follow log }
   end
-end
-
-# start the service if it isn't. We do it like this because logentries
-# start borks if the service is already running.
-service 'logentries' do
-  action :start
-  not_if 'service logentries status' # status returns 0 if the service is running
 end

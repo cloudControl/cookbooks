@@ -1,6 +1,7 @@
+name "logentries"
 maintainer "Tobias Wilken"
 maintainer_email "tw@cloudcontrol.de"
 license "Apache 2.0"
 description "Installs and configures Logentries"
-version "0.2.1"
+version "0.2.2"
 depends "apt"

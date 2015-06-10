@@ -1,0 +1,17 @@
+[Main]
+hostname = <%= node[:hostname] %>
+metrics-cpu = system
+metrics-vcpu = core
+metrics-mem = system
+metrics-swap = system
+metrics-net = sum select
+metrics-disk = sum
+metrics-space = /
+metrics-interval = 5s
+
+<% node[:logentries][:logsets].each do |key, log| %>
+
+[<%= log[:name] || key %>]
+path = <%= log[:filename] %>
+destination = <%= node[:hostname].split('-')[0] %>/<%= log[:name] || key %>
+<% end %>
