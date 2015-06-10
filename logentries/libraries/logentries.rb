@@ -10,7 +10,7 @@ class Logentries < Chef::Recipe
   # - checks if we are already following this log
   def follow(log)
     Chef::Log.info "follow log #{log[:filename]}"
-    execute "le follow '#{log[:filename]}' --name=#{log[:name]} --type=#{log[:type]}" do
+    execute "le follow '#{log[:filename]}' --name=#{log[:name]}" do
       not_if "le followed #{log[:filename]}"
     end
   end
